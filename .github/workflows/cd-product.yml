@@ -43,6 +43,9 @@ jobs:
 
     permissions:
       contents: write
+    
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
 
     steps:
       - uses: actions/checkout@v6
@@ -57,8 +60,9 @@ jobs:
       - name: Bump version
         id: bump
         run: |
-          NEW_VERSION=$(npm version ${{ github.event.inputs.version_bump }})
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          RAW_VERSION=$(npm version ${{ github.event.inputs.version_bump }})
+          CLEAN_VERSION=$(echo "$RAW_VERSION" | tr -d 'v')
+          echo "new_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Push changes
         run: |
