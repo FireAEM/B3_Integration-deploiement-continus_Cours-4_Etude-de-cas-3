@@ -127,4 +127,5 @@ jobs:
         run: |
           gh release create ${{ needs.version.outputs.new_version }} \
             --title "product-service ${{ needs.version.outputs.new_version }}" \
-            --generate-notes
+            --generate-notes \
+            --verify-tag
