@@ -13,9 +13,6 @@ on:
           - minor
           - major
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner | toLowerCase() }}/product-service
-
 jobs:
   validate:
     runs-on: ubuntu-latest
