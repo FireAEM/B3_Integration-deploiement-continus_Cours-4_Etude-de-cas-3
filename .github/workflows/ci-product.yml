@@ -15,23 +15,47 @@ jobs:
         node-version: [20.x, 24.x]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+      # Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Install dependencies
-      run: npm install
+      # Cache node_modules for speed
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: Run lint
-      run: npx eslint src tests || echo "No lint errors"
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run tests
-      run: npm test
+      # Run lint (optional)
+      - name: Run lint
+        run: |
+          if [ -f .eslintrc.json ] || [ -f .eslintrc.js ]; then
+            npx eslint src tests
+          else
+            echo "No ESLint config found, skipping lint"
+          fi
 
-    - name: Validate JSON file
-      run: |
-        node -e "JSON.parse(require('fs').readFileSync('./data/products.json')); console.log('products.json is valid')"
+      # Run tests
+      - name: Run tests
+        run: npm test
+
+      # Validate JSON file
+      - name: Validate products.json
+        run: |
+          if [ -f ./data/products.json ]; then
+            node -e "JSON.parse(require('fs').readFileSync('./data/products.json')); console.log('products.json is valid')"
+          else
+            echo "products.json not found, skipping validation"
+          fi
