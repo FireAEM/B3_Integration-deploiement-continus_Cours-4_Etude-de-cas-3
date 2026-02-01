@@ -41,7 +41,7 @@ jobs:
     needs: lint
     defaults:
       run:
-        working-directory: services/frontend
+        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v6
@@ -59,7 +59,7 @@ jobs:
     needs: lint
     defaults:
       run:
-        working-directory: services/frontend
+        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v6
