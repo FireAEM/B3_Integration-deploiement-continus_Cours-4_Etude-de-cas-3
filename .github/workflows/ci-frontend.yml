@@ -71,4 +71,15 @@ jobs:
         run: docker build -t frontend .
 
       - name: Test container runs
-        run: docker run --rm -p 8080:80 frontend
+        run: |
+          # Start container in background
+          docker run -d --name frontend-test -p 8080:80 frontend
+
+          # Wait for Nginx to start
+          sleep 3
+
+          # Test that the container responds
+          curl -I http://localhost:8080
+
+          # Stop and remove container
+          docker stop frontend-test
