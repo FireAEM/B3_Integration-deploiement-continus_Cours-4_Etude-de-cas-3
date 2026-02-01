@@ -3,6 +3,13 @@ name: CI Order Service
 on:
   push:
     branches: [main]
+    paths:
+      - "services/order/**"
+
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/order/**"
 
 permissions:
   contents: read

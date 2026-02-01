@@ -3,6 +3,13 @@ name: CI API Gateway
 on:
   push:
     branches: [main]
+    paths:
+      - "services/api-gateway/**"
+
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/api-gateway/**"
 
 permissions:
   contents: read
