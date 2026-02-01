@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend   # ✅ Correction ici
+        working-directory: frontend
 
     permissions:
       packages: write
@@ -69,6 +69,5 @@ jobs:
           else
             gh release create ${{ github.event.inputs.version_tag }} \
               --title "frontend ${{ github.event.inputs.version_tag }}" \
-              --generate-notes \
-              --verify-tag
+              --generate-notes
           fi
