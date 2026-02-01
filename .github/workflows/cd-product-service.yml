@@ -46,6 +46,7 @@ jobs:
     
     outputs:
       new_version: ${{ steps.bump.outputs.new_version }}
+      service_tag: ${{ steps.create_tag.outputs.service_tag }}
 
     steps:
       - uses: actions/checkout@v6
@@ -64,7 +65,31 @@ jobs:
           CLEAN_VERSION=$(echo "$RAW_VERSION" | tr -d 'v')
           echo "new_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Push changes
+      - name: Generate changelog
+        run: |
+          git fetch --tags
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            git log --pretty=format:"- %s" > CHANGELOG.md
+          else
+            git log "$LAST_TAG"..HEAD --pretty=format:"- %s" > CHANGELOG.md
+          fi
+
+      - name: Commit changelog and package changes
+        run: |
+          git add package.json package-lock.json CHANGELOG.md || true
+          git commit -m "chore(release): product-service v${{ steps.bump.outputs.new_version }}" || echo "No changes to commit"
+
+      - name: Create service tag
+        id: create_tag
+        run: |
+          SERVICE_NAME="product-service"
+          VERSION="${{ steps.bump.outputs.new_version }}"
+          SERVICE_TAG="${SERVICE_NAME}-v${VERSION}"
+          git tag -a "$SERVICE_TAG" -m "Release $SERVICE_TAG"
+          echo "service_tag=$SERVICE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Push changes and tags
         run: |
           git push origin HEAD
           git push origin --tags
@@ -98,19 +123,17 @@ jobs:
       - name: Setup Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build image
-        run: docker build -t ${{ steps.image.outputs.name }}:latest .
-
-      - name: Tag image
+      - name: Build and push image with cache
         run: |
-          docker tag ${{ steps.image.outputs.name }}:latest ${{ steps.image.outputs.name }}:${{ needs.version.outputs.new_version }}
-          docker tag ${{ steps.image.outputs.name }}:latest ${{ steps.image.outputs.name }}:${{ github.sha }}
-
-      - name: Push images
-        run: |
-          docker push ${{ steps.image.outputs.name }}:latest
-          docker push ${{ steps.image.outputs.name }}:${{ needs.version.outputs.new_version }}
-          docker push ${{ steps.image.outputs.name }}:${{ github.sha }}
+          IMAGE=${{ steps.image.outputs.name }}
+          SERVICE_TAG=${{ needs.version.outputs.service_tag }}
+          docker buildx build \
+            --cache-from=type=registry,ref=${IMAGE}:cache \
+            --cache-to=type=registry,ref=${IMAGE}:cache,mode=max \
+            -t ${IMAGE}:latest \
+            -t ${IMAGE}:${{ needs.version.outputs.new_version }} \
+            -t ${IMAGE}:${{ github.sha }} \
+            --push .
 
   release:
     runs-on: ubuntu-latest
@@ -125,11 +148,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view ${{ needs.version.outputs.new_version }} >/dev/null 2>&1; then
-            echo "Release ${{ needs.version.outputs.new_version }} already exists, skipping creation"
+          TAG=${{ needs.version.outputs.service_tag }}
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, skipping creation"
           else
-            gh release create ${{ needs.version.outputs.new_version }} \
-              --title "order-service ${{ needs.version.outputs.new_version }}" \
-              --generate-notes \
-              --verify-tag
+            if [ -f services/product/CHANGELOG.md ]; then
+              gh release create "$TAG" --title "product-service ${TAG}" --notes-file services/product/CHANGELOG.md --verify-tag
+            else
+              gh release create "$TAG" --title "product-service ${TAG}" --generate-notes --verify-tag
+            fi
           fi
