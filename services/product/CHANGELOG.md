@@ -1,0 +1,20 @@
+- ci(cd): improve per‑service CD workflows
+- ci(workflows) : add path‑filtered push and PR triggers for product, order and api-gateway
+- fic(ci) : fix lockfile after Dependabot update
+- Merge pull request #3 from FireAEM/dependabot/npm_and_yarn/frontend/globals-17.3.0
+- Merge branch 'main' into dependabot/npm_and_yarn/frontend/globals-17.3.0
+- Merge pull request #5 from FireAEM/dependabot/npm_and_yarn/frontend/eslint-plugin-react-refresh-0.5.0
+- Update ci-frontend.yml
+- Update ci-frontend.yml
+- fix(ci) : fix ci-frontend.yml
+- Merge pull request #1 from FireAEM/dependabot/github_actions/actions/setup-node-6
+- Merge pull request #2 from FireAEM/dependabot/npm_and_yarn/services/api-gateway/globals-17.3.0
+- Merge pull request #4 from FireAEM/dependabot/github_actions/github/codeql-action-4
+- fix(ci) : fix ci-frontend.yml
+- fix(ci) : fix ci-frontend.yml
+- chore(deps-dev): bump eslint-plugin-react-refresh in /frontend
+- chore(deps): bump github/codeql-action from 3 to 4
+- chore(deps-dev): bump globals from 16.5.0 to 17.3.0 in /frontend
+- chore(deps-dev): bump globals in /services/api-gateway
+- chore(deps): bump actions/setup-node from 4 to 6
+- feat(depensabot) : add dependabot.yml
